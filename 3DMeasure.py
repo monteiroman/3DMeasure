@@ -1,62 +1,87 @@
 import os
 import matplotlib
 import matplotlib.pyplot as plt
+import matplotlib.pyplot as plt
+from mpl_toolkits.mplot3d import Axes3D
+from matplotlib import cm
 
-def ReadFile(path):
-    with open(path, "r") as file:
-        message = file.read()
-    file.close()
+import numpy as np
 
-    index = 1
-    message = message[message.index("# Begin TRACE A Data"):]
-    message = message[message.index("P_")+2:message.index("\n\n")]
-    # print(message)
+import ReadFile.ReadMeasureFile as RdMf
 
-    frec = []
-    id = []
-    mag = []
+class Measures ():
+    def __init__ (self, row, column, measureNum):
+        self.freq = []
+        self.point_id = []
+        self.mag = []
 
-    while message.find("P_")!= -1:
-        string = message[:message.index("P_")]
-        id.append(string[:string.index("=")])
-        mag.append(string[string.index("=")+1:string.index(" ")])
-        aux_frec = string[string.index(" ")+3:string.index("z")+1]
-        frec.append(aux_frec[:aux_frec.index(" ")])
+        self.xCoord = 0
+        self.yCoord = 0
 
-        message = message[len(string):]
-        message = message[message.index("P_")+2:]
+        self.setMeasure(row, column, measureNum)
 
-    id.append(message[:message.index("=")])
-    mag.append(message[message.index("=")+1:message.index(" ")])
-    aux_frec = message[message.index(" ")+3:message.index("z")+1]
-    frec.append(aux_frec[:aux_frec.index(" ")])
+    def setMeasure (self, row, column, measureNumber, xDist=3, yDist=3):
+        self.xCoord = column * xDist + xDist/2
+        self.yCoord = row * yDist + yDist/2
 
-    # for i in range(len(id)):
-    #     print("ID:" + id[i] + " Frecuencia:" + frec[i] + " MHz" + " Magnitud:" + mag[i])
+        dirpath = os.getcwd()
+        filePath = dirpath + "/DROP_FILES_HERE/FileName_#" + str(measureNumber) + ".spa"
+        self.id, self.freq, self.mag = RdMf.ReadMeasureFile(filePath)
 
-    id = [float(i) for i in id]
-    mag = [float(i) for i in mag]
-    frec = [float(i) for i in frec]
+    def getMeasure (self):
+        return self.mag, self.freq
 
-    return id, frec, mag
+    def getPointMeasure (self, freqPoint):
+        return self.xCoord, self.yCoord, self.mag[freqPoint]
+
+    def getFrequency (self, index):
+        return self.freq[index]
+
 
 def main():
-    dirpath = os.getcwd()
-    id, frec, mag = ReadFile(dirpath + "/DROP_FILES_HERE/FileName.spa")
+    fig = plt.figure()
+    ax = fig.add_subplot(111, projection='3d')
 
-    # for i in range(len(id)):
-    #     print("ID:" + id[i] + " Frecuencia:" + frec[i] + " MHz" + " Magnitud:" + mag[i])
-    fig, ax = plt.subplots()
-    ax.plot(frec, mag)
+    rows = int(input("Cantidad de filas: "))
+    columns = int(input("Cantidad de columnas: "))
+    freqSought = int(input("Frecuencia buscada [MHz]: "))
+    measureQuantity = rows * columns
+    # Generates the Measurment list
+    measureList = []
+    col = 1
+    row = 1
+    measureNum = 1
+    for row in range(rows):
+        for col in range(columns):
+            measureList.append(Measures(row, col, measureNum))
+            measureNum = measureNum +1
+    # Search for the nearest frequency of frequency been sought
+    mMeasure = measureList[0]
+    index = 0
+    while mMeasure.getFrequency(index) < freqSought:
+        index = index + 1
+        realFreq = mMeasure.getFrequency(index)
+    # gets all the points of interest
+    objMeasure = 0
+    x = []
+    y = []
+    z = []
+    for objMeasure in range(measureQuantity):
+        auxX, auxY, auxZ = measureList[objMeasure].getPointMeasure(index)
+        x.append(auxX)
+        y.append(auxY)
+        z.append(auxZ)
 
-    ax.set(xlabel='frec [MHz]', ylabel='Amplitude [dB]',
-           title='Simple plot')
-    ax.grid()
+    z = np.array(z)
 
-    # fig.savefig("test.png")
+    mTitle = "Magnitudes a " + str(realFreq) + "MHz"
+    ax.set(xlabel='X coord', ylabel='y coord',
+           title=mTitle)
+
+    surf = ax.plot_trisurf(x, y, z, cmap=cm.jet, linewidth=0)
+
+    fig.colorbar(surf)
     plt.show()
-
-
 
 if __name__ == '__main__':
     main()
