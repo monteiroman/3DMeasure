@@ -12,7 +12,7 @@ def ReadMeasureFile(path):
     id = []
     mag = []
 
-    while message.find("P_")!= -1:
+    while message.find("P_") != -1:
         string = message[:message.index("P_")]
         id.append(string[:string.index("=")])
         mag.append(string[string.index("=")+1:string.index(" ")])
