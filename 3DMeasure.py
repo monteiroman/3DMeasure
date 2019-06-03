@@ -16,23 +16,12 @@ BISPLEV = 1
 CUBIC = 2
 
 class Measures ():
-    def __init__ (self, row, column, measureNum):
-        self.freq = []
-        self.point_id = []
-        self.mag = []
-
-        self.xCoord = 0
-        self.yCoord = 0
-
-        self.setMeasure(row, column, measureNum)
-
-    def setMeasure (self, row, column, measureNumber, xDist=3, yDist=3):
+    def __init__ (self, row, column, measureNum, freq, mag, id, xDist=3, yDist=3):
+        self.freq = freq
+        self.point_id = id
+        self.mag = mag
         self.xCoord = column * xDist + xDist/2
         self.yCoord = row * yDist + yDist/2
-
-        dirpath = os.getcwd()
-        filePath = dirpath + "/DROP_FILES_HERE/FileName_#" + str(measureNumber) + ".spa"
-        self.id, self.freq, self.mag = RdMf.ReadMeasureFile(filePath)
 
     def getMeasure (self):
         return self.mag, self.freq
@@ -46,10 +35,23 @@ class Measures ():
     def getMeasureQuant (self):
         return len(self.freq)
 
-def Plot3DSurface (x, y, z, realFreq, type=REGULAR):
+    def getMagnitudeList (self):
+        return self.mag
+
+    def getMagnitude (self, index):
+        return self.mag[index]
+
+    def getMaxMeasure (self):
+        return max(self.mag)
+
+
+def Plot3DSurface (x, y, z, realFreq, maxValue, type=REGULAR, magRef=True):
     fig = plt.figure()
     ax = fig.add_subplot(111, projection='3d')
-    mTitle = "Magnitudes a " + str(realFreq) + "MHz"
+    if magRef:
+        mTitle = "Magnitudes a " + str(realFreq) + "MHz" + " Referencia en " + str(maxValue) + "dB"
+    else:
+        mTitle = "Magnitudes a " + str(realFreq) + "MHz"
     ax.set(xlabel='X coord', ylabel='y coord',title=mTitle)
     if type==REGULAR:
         surf = ax.plot_trisurf(x, y, z, cmap=cm.jet, linewidth=0, antialiased=True)
@@ -67,8 +69,11 @@ def Plot3DSurface (x, y, z, realFreq, type=REGULAR):
         xig, yig = np.meshgrid(xi, yi)
         surf = ax.plot_surface(xig, yig, zi, cmap=cm.jet, rstride=1, cstride=1, alpha=None, antialiased=True)
         fig.colorbar(surf)
+    if magRef:
+        ax.set_zlim(top=maxValue)
     plt.show()
 
+# TODO: Revisar esta funcion, no esta funcionando bien
 def NearestFreq (mMeasure, freqSought):
     index = 0
     totalMeasures = mMeasure.getMeasureQuant()
@@ -111,8 +116,16 @@ def main():
     measureNum = 1
     for row in range(rows):
         for col in range(columns):
-            measureList.append(Measures(row, col, measureNum))
+            dirpath = os.getcwd()
+            filePath = dirpath + "/DROP_FILES_HERE/FileName_#" + str(measureNum) + ".spa"
+            id, freq, mag = RdMf.ReadMeasureFile(filePath)
+            measureList.append(Measures(row, col, measureNum, freq, mag, id))
             measureNum += 1
+    # Search maximum measured value
+    maxList = []
+    for i in range(len(measureList)):
+        maxList.append(measureList[i].getMaxMeasure())
+    maxValue = max(maxList)
     # Search for the nearest frequency of frequency been sought
     index = NearestFreq(measureList[0], freqSought)
     # gets all the points of interest
@@ -130,7 +143,7 @@ def main():
     y = np.array(y)
     z = np.array(z)
     # Plot 3D surface with matplotlib
-    Plot3DSurface(x, y, z, measureList[0].getFrequency(index), graphType-1)
+    Plot3DSurface(x, y, z, measureList[0].getFrequency(index), maxValue, graphType-1)
 
 
 if __name__ == '__main__':
