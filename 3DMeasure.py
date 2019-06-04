@@ -92,6 +92,7 @@ def main():
             id, freq, mag = RdMf.ReadMeasureFile(filePath)
             measureList.append(Measures(row, col, measureNum, freq, mag, id))
             measureNum += 1
+            # print(measureNum)
     # Search maximum measured value
     maxList = []
     for i in range(len(measureList)):

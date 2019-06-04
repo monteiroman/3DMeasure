@@ -12,6 +12,8 @@ def ReadMeasureFile(path):
     id = []
     mag = []
 
+    # aux = 0
+
     while message.find("P_") != -1:
         string = message[:message.index("P_")]
         id.append(string[:string.index("=")])
@@ -21,6 +23,9 @@ def ReadMeasureFile(path):
 
         message = message[len(string):]
         message = message[message.index("P_")+2:]
+
+        # print(aux)
+        # aux += 1
 
     id.append(message[:message.index("=")])
     mag.append(message[message.index("=")+1:message.index(" ")])
