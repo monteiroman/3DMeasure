@@ -1,10 +1,12 @@
-# Modo de uso:
-#                 python3 3DMeasure.py
-# Parametros:
-#                 Cantidad de filas: 12
-#                 Cantidad de columnas: 8
-#                 Frecuencia buscada [MHz]: 100         (la requerida)
-#                 Tipo de grafico: 1=REGULAR 2=BISPLEV 3=CUBIC 3      (por lo general uso la 3)
+#####################################################################################################
+# Modo de uso:                                                                                      #
+#                 python3 3DMeasure.py                                                              #
+# Parametros:                                                                                       #
+#                 Cantidad de filas: 12                                                             #
+#                 Cantidad de columnas: 8                                                           #
+#                 Frecuencia buscada [MHz]: 100         (la requerida)                              #
+#                 Tipo de grafico: 1=REGULAR 2=BISPLEV 3=CUBIC 3      (por lo general uso la 3)     #
+#####################################################################################################
 
 import os
 import matplotlib
@@ -25,7 +27,7 @@ BISPLEV = 1
 CUBIC = 2
 
 def Plot3DSurface (x, y, z, realFreq, maxValue, type=REGULAR, magRef=True):
-    fig = plt.figure()
+    fig = plt.figure(figsize=(13,9))
     plt.rcParams.update({'font.size': 18})
     ax = fig.add_subplot(111, projection='3d')
     if magRef:
