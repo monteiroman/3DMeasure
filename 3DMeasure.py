@@ -1,3 +1,11 @@
+# Modo de uso:
+#                 python3 3DMeasure.py
+# Parametros:
+#                 Cantidad de filas: 12
+#                 Cantidad de columnas: 8
+#                 Frecuencia buscada [MHz]: 100         (la requerida)
+#                 Tipo de grafico: 1=REGULAR 2=BISPLEV 3=CUBIC 3      (por lo general uso la 3)
+
 import os
 import matplotlib
 import matplotlib.pyplot as plt
@@ -18,12 +26,16 @@ CUBIC = 2
 
 def Plot3DSurface (x, y, z, realFreq, maxValue, type=REGULAR, magRef=True):
     fig = plt.figure()
+    plt.rcParams.update({'font.size': 18})
     ax = fig.add_subplot(111, projection='3d')
     if magRef:
         mTitle = "Magnitudes a " + str(realFreq) + "MHz" + " Referencia en " + str(maxValue) + "dB"
     else:
         mTitle = "Magnitudes a " + str(realFreq) + "MHz"
-    ax.set(xlabel='X coord', ylabel='y coord',title=mTitle)
+    ax.set(xlabel='Coordenadas en X [cm]', ylabel='Coordenadas en Y [cm]', zlabel='dBm',title=mTitle)
+    ax.xaxis.labelpad = 15
+    ax.yaxis.labelpad = 15
+    ax.zaxis.labelpad = 20
     if type==REGULAR:
         surf = ax.plot_trisurf(x, y, z, cmap=cm.jet, linewidth=0, antialiased=True)
         fig.colorbar(surf)
